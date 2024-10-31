@@ -1,0 +1,13 @@
+train: ../train/images
+val: ../valid/images
+test: ../test/images
+
+nc: 2
+names: ['pick', 'target']
+
+roboflow:
+  workspace: working-ntoez
+  project: target-anmed
+  version: 1
+  license: MIT
+  url: https://universe.roboflow.com/working-ntoez/target-anmed/dataset/1

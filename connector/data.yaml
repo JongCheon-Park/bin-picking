@@ -1,0 +1,13 @@
+train: ../train/images
+val: ../valid/images
+test: ../test/images
+
+nc: 2
+names: ['Connector-Target', 'Target']
+
+roboflow:
+  workspace: working-ntoez
+  project: target2-c6cen
+  version: 1
+  license: CC BY 4.0
+  url: https://universe.roboflow.com/working-ntoez/target2-c6cen/dataset/1
