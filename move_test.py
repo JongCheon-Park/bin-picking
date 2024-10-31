@@ -1,39 +1,31 @@
 import sys
-import copy
 import rospy
 import moveit_commander
-import moveit_msgs.msg
 import geometry_msgs.msg
 from sensor_msgs.msg import PointCloud2
 import sensor_msgs.point_cloud2 as pc2
 from ur_msgs.srv import SetIO
-
 from std_msgs.msg import Bool
 import numpy as np
-import time
 
 
 class MoveRobotNode():
-    """MoveRobotNode"""
-
     def __init__(self):
-        rospy.init_node("move_robot_node", anonymous=True)
-        rospy.Subscriber('target_pcl', PointCloud2, self.callback)
-        rospy.Subscriber('picking_pcl', PointCloud2, self.callback2)
-        self.flagMsg = rospy.Publisher('readyToDetct', Bool, queue_size=1)
+        rospy.init_node("MoveRobotNode", anonymous=True)
+        rospy.Subscriber('TargetPCL', PointCloud2, self.callback)
+        rospy.Subscriber('PickingPCL', PointCloud2, self.callback2)
+        self.FLAGMSG = rospy.Publisher('ReadyToDetect', Bool, queue_size=1)
         moveit_commander.roscpp_initialize(sys.argv)
-        robot = moveit_commander.RobotCommander()
-        scene = moveit_commander.PlanningSceneInterface()
-        group_name = "manipulator"
+        GROUPNAME = "manipulator"
 
-        self.move_group = moveit_commander.MoveGroupCommander(group_name)
+        self.move_group = moveit_commander.MoveGroupCommander(GROUPNAME)
 
-        self.detectMsg = Bool()
-        self.detectMsg.data = True
-        self.imworking = True
-        self.set_io = rospy.ServiceProxy('/ur_hardware_interface/set_io', SetIO)
+        self.DETECTMSG = Bool()
+        self.DETECTMSG.data = True
+        self.IMWORKING = True # True로 시작해서 -> GoHome 이동 후 False로 명령 대기
+        self.Set_IO = rospy.ServiceProxy('/ur_hardware_interface/set_io', SetIO)
 
-        self.apply_vacuum(0)
+        self.applyVaccum(0)
 
         self.OFFSET_X = 0.078 # 7.8cm
 
@@ -45,7 +37,7 @@ class MoveRobotNode():
         pointY = int(np.ceil(int_data[1] * 1000)) / 1000
         pointZ = int(np.ceil(int_data[2] * 1000)) / 1000
         print('Robot operating, x : ', pointX, 'y : ', pointY, 'z', pointZ)
-        if self.imworking == False :
+        if self.IMWORKING == False :
             self.goConnect(pointX, pointY, pointZ)
 
     def callback(self, input_ros_msg):
@@ -56,7 +48,7 @@ class MoveRobotNode():
         pointY = int(np.ceil(int_data[1] * 1000)) / 1000
         pointZ = int(np.ceil(int_data[2] * 1000)) / 1000
         print('Robot operating, x : ', pointX, 'y : ', pointY, 'z', pointZ)
-        if self.imworking == False :
+        if self.IMWORKING == False :
             self.goPosition(pointX, pointY, pointZ)
 
 
@@ -75,11 +67,11 @@ class MoveRobotNode():
         move_group.stop()
         wpose = move_group.get_current_pose().pose
 
-        self.imworking = False
+        self.IMWORKING = False
 
     def goConnect(self, pointX, pointY, pointZ):
 
-        self.imworking = True
+        self.IMWORKING = True
         self.move_group.stop()
         self.move_group.clear_pose_targets()
         pose_goal = geometry_msgs.msg.Pose()
@@ -129,7 +121,7 @@ class MoveRobotNode():
 
     def goPosition(self, pointX, pointY, pointZ):
 
-        self.imworking = True
+        self.IMWORKING = True
         self.move_group.stop()
         self.move_group.clear_pose_targets()
         pose_goal = geometry_msgs.msg.Pose()
@@ -181,9 +173,9 @@ class MoveRobotNode():
 
         #self.goHome()
 
-    def apply_vacuum(self, OnOff):
+    def applyVaccum(self, OnOff):
         # OnOff = 1 : On
-        self.set_io(fun=1, pin=0, state=OnOff)
+        self.Set_IO(fun=1, pin=0, state=OnOff)
 
 if __name__ == "__main__":
     robot_control = MoveRobotNode()
